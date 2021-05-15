@@ -1,0 +1,15 @@
+[package]
+name = "url"
+version = "0.1.0"
+authors = ["shyu61 <ohs6261@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0"
+atty = "0.2"
+log = "0.4.14"
+pretty_env_logger = "0.4.0"
+structopt = "0.2"
+url = "1.7"

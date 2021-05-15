@@ -1,0 +1,71 @@
+name: Compile
+
+on:
+  push:
+    paths-ignore:
+    - '*.md'
+    - '*.sh'
+    - 'Dockerfile'
+    - 'Makefile'
+    - 'LICENSE-*'
+    tags-ignore:
+    - '*.*.*'
+    branches:
+    - '**'
+
+jobs:
+  simple-test:
+    strategy:
+      matrix:
+        target:
+        - x86_64-unknown-linux-gnu
+        - x86_64-unknown-linux-musl
+        - x86_64-apple-darwin
+        - x86_64-pc-windows-msvc
+        include:
+        - target: x86_64-unknown-linux-gnu
+          os: ubuntu-latest
+        - target: x86_64-unknown-linux-musl
+          os: ubuntu-latest
+        - target: x86_64-apple-darwin
+          os: macos-latest
+        - target: x86_64-windows-msvc
+          os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Setup code
+      uses: actions/checkout@v2
+
+    - name: Install GNU tar
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install gnu-tar
+        echo PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH" >> $GITHUB_ENV
+
+    - name: Setup Rust toolchain
+      run: |
+        rustup component add rustfmt clippy
+        rustup target add ${{ matrix.target }}
+
+    - name: Cache cargo files
+      uses: actions/checkout@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ matrix.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Test
+      run: |
+        cargo test --target=${{ matrix.target }} --all-features
+
+    - name: Check formart
+      run: |
+        cargo fmt --all -- --check
+
+    - name: Lint
+      run: |
+        cargo clippy --all-features -- -D warnings
