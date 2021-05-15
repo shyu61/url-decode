@@ -31,7 +31,10 @@ fn main() -> Result<()> {
     }
 
     #[allow(clippy::unit_arg)]
-    Ok(println!("{}", decode(&input).with_context(|| String::from("Failed decode"))?))
+    Ok(println!(
+        "{}",
+        decode(&input).with_context(|| String::from("Failed decode"))?
+    ))
 }
 
 fn is_stdin(input: Option<&String>) -> bool {
