@@ -8,13 +8,11 @@ on:
     - 'Dockerfile'
     - 'Makefile'
     - 'LICENSE-*'
-    tags-ignore:
-    - '*.*.*'
-    branches:
-    - '**'
+    branches: [ master ]
+    pull_request: [ master ]
 
 jobs:
-  simple-test:
+  test:
     strategy:
       matrix:
         target:
@@ -29,7 +27,7 @@ jobs:
           os: ubuntu-latest
         - target: x86_64-apple-darwin
           os: macos-latest
-        - target: x86_64-windows-msvc
+        - target: x86_64-pc-windows-msvc
           os: windows-latest
 
     runs-on: ${{ matrix.os }}
@@ -50,7 +48,7 @@ jobs:
         rustup target add ${{ matrix.target }}
 
     - name: Cache cargo files
-      uses: actions/checkout@v2
+      uses: actions/cache@v2
       with:
         path: |
           ~/.cargo/registry
@@ -59,13 +57,10 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Test
-      run: |
-        cargo test --target=${{ matrix.target }} --all-features
+      run: cargo test --target=${{ matrix.target }} --all-features
 
     - name: Check formart
-      run: |
-        cargo fmt --all -- --check
+      run: cargo fmt --all -- --check
 
     - name: Lint
-      run: |
-        cargo clippy --all-features -- -D warnings
+      run: cargo clippy --all-features -- -D warnings
